@@ -1,1 +1,1 @@
-# chatgpt-telegram-bot
+chatGPT Telegram bot
