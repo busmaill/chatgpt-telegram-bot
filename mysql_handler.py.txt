@@ -1,0 +1,37 @@
+import mysql.connector
+import configparser
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+class MySQLHandler:
+
+    def __init__(self):
+        # Read database settings from config file
+        self.host = config['MySQL']['host']
+        self.user = config['MySQL']['user']
+        self.password = config['MySQL']['password']
+        self.database = config['MySQL']['database']
+
+        # Connect to the database
+        self.db = mysql.connector.connect(
+            host=self.host,
+            user=self.user,
+            password=self.password,
+            database=self.database
+        )
+        self.cursor = self.db.cursor()
+
+    def save_request(self, user_id, user_message):
+        # Save user request to database
+        sql = "INSERT INTO requests (user_id, user_message) VALUES (%s, %s)"
+        values = (user_id, user_message)
+        self.cursor.execute(sql, values)
+        self.db.commit()
+
+    def get_requests(self):
+        # Get all requests from database
+        sql = "SELECT * FROM requests"
+        self.cursor.execute(sql)
+        result = self.cursor.fetchall()
+        return result

@@ -1,0 +1,30 @@
+import asyncio
+import openai
+import configparser
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+openai.api_key = config['OpenAI']['api_key']
+
+class ResponseHandler:
+
+    def __init__(self):
+        self.model_engine = 'text-davinci-002'
+
+    async def generate_response(self, user_message):
+        try:
+            # Generate response from OpenAI
+            response = await asyncio.get_event_loop().run_in_executor(None, openai.Completion.create, engine=self.model_engine, prompt=user_message, max_tokens=1024, n=1,stop=None,temperature=0.8)
+            return response.choices[0].text
+        except Exception as e:
+            print(f"Error generating response: {e}")
+            return "Sorry, I couldn't understand what you said."
+
+    async def handle_response(self, user_message):
+        # This function is responsible for handling responses to user messages.
+        # In this example, it simply generates a response using OpenAI's GPT-3 API.
+        # You can replace this with your own code.
+
+        response = await self.generate_response(user_message)
+        return response

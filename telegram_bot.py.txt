@@ -1,0 +1,59 @@
+import asyncio
+import telethon
+from telethon import TelegramClient, events
+import configparser
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+api_id = config['Telegram']['api_id']
+api_hash = config['Telegram']['api_hash']
+bot_token = config['Telegram']['bot_token']
+
+client = TelegramClient('chatgpt_bot', api_id, api_hash).start(bot_token=bot_token)
+
+class TelegramBot:
+
+    def __init__(self):
+        self.spacy_nlp = spacy.load("en_core_web_sm")
+        self.mysql_handler = MySQLHandler()
+
+    async def handle_request(self, event):
+        # Get user message
+        user_msg = event.message.text
+        
+        # Store user request in MySQL database
+        self.mysql_handler.store_request(event.message.from_id, user_msg)
+
+        # Process user message with spaCy
+        # This is just an example, you can replace this with your own code
+        doc = self.spacy_nlp(user_msg)
+        response = " ".join([token.text for token in doc])
+
+        # Split response into separate messages if it exceeds the Telegram message limit
+        message_limit = 4096 # The maximum message length allowed by Telegram
+        if len(response) > message_limit:
+            messages = [response[i:i+message_limit] for i in range(0, len(response), message_limit)]
+        else:
+            messages = [response]
+
+        # Send response messages to user
+        for message in messages:
+            await client.send_message(event.chat_id, message)
+
+    def run(self):
+        # Handle Telegram requests
+        @client.on(events.NewMessage(pattern='/start'))
+        async def start(event):
+            await event.respond('Hello, welcome to my chatbot!')
+        
+        @client.on(events.NewMessage())
+        async def handle_message(event):
+            await self.handle_request(event)
+
+        # Start the event loop
+        client.run_until_disconnected()
+
+if __name__ == '__main__':
+    bot = TelegramBot()
+    bot.run()

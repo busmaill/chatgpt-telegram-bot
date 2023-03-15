@@ -1,0 +1,5 @@
+asyncio==3.4.3
+spacy==3.3.0
+mysql-connector-python==8.0.26
+python-telegram-bot==13.7
+telethon==1.23.0
